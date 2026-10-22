@@ -20,27 +20,21 @@ func validateUserSessionMiddleware() gin.HandlerFunc {
 }
 func RegisterRoutes() *gin.Engine {
 	router := gin.Default()
-	//公开的
-	public := router.Group("/api")
-	{
-		public.POST("/user", CreateUser)
-	}
 
-	//需要验证的
-	protected := router.Group("/protected")
+	// 公开路由
+	router.POST("/user", CreateUser)
+
+	// 需要验证的路由
+	protected := router.Group("/")
+	protected.Use(validateUserSessionMiddleware())
 	{
-		protected.Use(validateUserSessionMiddleware())
 		protected.POST("/user/:user_name", Login)
 	}
+
 	return router
 }
 
 func main() {
-	server := gin.Default()
-	//创建用户
-	server.POST("/user", CreateUser)
-	//登录
-	server.POST("/user/:user_name", Login)
-
+	server := RegisterRoutes()
 	server.Run(":8089")
 }

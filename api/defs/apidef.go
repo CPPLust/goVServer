@@ -7,8 +7,8 @@ type SignedUp struct {
 
 // request
 type UserCredential struct {
-	Username string `json:"user_name"`
-	Pwd      string `json:"pwd"`
+	Username string `json:"username"`
+	Pwd      string `json:"passwd"`
 }
 
 type VideoInfo struct {
