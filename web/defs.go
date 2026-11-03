@@ -12,4 +12,5 @@ var (
 	ErrorRequestNotRecognized   = map[string]string{"error": "request not recognized"}
 	ErrorRequestBodyParseFailed = map[string]string{"error": "request body parse failed"}
 	ErrorInternalFaults         = map[string]string{"error": "internal faults"}
+	ErrorUserAlreadyExist       = map[string]string{"error": "user already exist"}
 )

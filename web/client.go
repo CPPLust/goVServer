@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -34,22 +35,36 @@ func request(b *ApiBody, c *gin.Context) {
 	switch b.Method {
 	case http.MethodGet:
 		// GET 请求：无请求体，直接转发
+		fmt.Printf("get url %v\n", newUrl)
 		req, _ := http.NewRequest("GET", newUrl, nil)
 		req.Header = c.Request.Header // 复制原始请求的所有 Header（含 X-Session-Id）
 		resp, err = httpClient.Do(req)
+		fmt.Printf("get reponse data %v\n", resp)
 		if err != nil {
 			log.Println(err)
+			re, _ := json.Marshal(ErrorInternalFaults)
+			c.String(http.StatusInternalServerError, string(re))
 			return
 		}
 		normalResponse(c, resp)
 
 	case http.MethodPost:
 		// POST 请求：携带 ReqBody 作为请求体
+		fmt.Printf("post url %v\n", newUrl)
 		req, _ := http.NewRequest("POST", newUrl, bytes.NewBuffer([]byte(b.ReqBody)))
 		req.Header = c.Request.Header
 		resp, err = httpClient.Do(req)
 		if err != nil {
 			log.Println(err)
+			re, _ := json.Marshal(ErrorInternalFaults)
+			c.String(http.StatusInternalServerError, string(re))
+			return
+		}
+		fmt.Printf("reponse data %v\n", resp)
+		// 检查 API 返回的特定错误
+		if resp.StatusCode == http.StatusConflict {
+			re, _ := json.Marshal(ErrorUserAlreadyExist)
+			c.String(http.StatusConflict, string(re))
 			return
 		}
 		normalResponse(c, resp)
@@ -61,6 +76,8 @@ func request(b *ApiBody, c *gin.Context) {
 		resp, err = httpClient.Do(req)
 		if err != nil {
 			log.Println(err)
+			re, _ := json.Marshal(ErrorInternalFaults)
+			c.String(http.StatusInternalServerError, string(re))
 			return
 		}
 		normalResponse(c, resp)

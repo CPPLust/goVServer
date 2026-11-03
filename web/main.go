@@ -17,6 +17,10 @@ func RegisterHandler() *gin.Engine {
 
 	router.POST("/api", apiHomeHandler)
 
+	router.GET("/videos/:vid-id", proxyVideoHandler)
+
+	router.POST("/upload/:vid-id", proxyUploadHandler)
+
 	return router
 }
 

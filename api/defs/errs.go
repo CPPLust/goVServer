@@ -18,4 +18,5 @@ var (
 	ErrorInternalFaults         = ErrorResponse{HttpSC: 500, Error: Err{Error: "internal service error", ErrorCode: "004"}}
 	ErrorServerReachLimit       = ErrorResponse{HttpSC: http.StatusServiceUnavailable, Error: Err{Error: "connection limit reached", ErrorCode: "005"}}
 	ErrorBadRequest             = ErrorResponse{HttpSC: http.StatusBadRequest, Error: Err{Error: "File is too big", ErrorCode: "006"}}
+	ErrorUserAlreadyExist       = ErrorResponse{HttpSC: http.StatusConflict, Error: Err{Error: "user already exist", ErrorCode: "007"}}
 )

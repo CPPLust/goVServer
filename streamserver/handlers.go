@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"mime"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 
 // const VIDEO_DIR = "./videos/"
 const VIDEO_DIR = "d:/gowork/code/3.code/goVServer/streamserver/videos/"
+const MAX_UPLOAD_SIZE = 50 << 20 // 50MB
 
 func streamHanler(c *gin.Context) {
 	vid := c.Param("vid-id")
@@ -58,7 +60,42 @@ func streamHanler(c *gin.Context) {
 }
 
 func uploadHanler(c *gin.Context) {
+	// 限制请求体大小
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MAX_UPLOAD_SIZE)
+	if err := c.Request.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
+		log.Printf("[uploadHanler] File is too big: %v", err)
+		sendErrorResponse(c, defs.ErrorBadRequest)
+		return
+	}
 
+	// 获取上传的文件
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		log.Printf("[uploadHanler] Error when try to get file: %v", err)
+		sendErrorResponse(c, defs.ErrorInternalFaults)
+		return
+	}
+	defer file.Close()
+
+	// 读取文件内容
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Printf("[uploadHanler] Read file error: %v", err)
+		sendErrorResponse(c, defs.ErrorInternalFaults)
+		return
+	}
+
+	// 获取视频 ID 并保存文件
+	fn := c.Param("vid-id")
+	err = os.WriteFile(VIDEO_DIR+fn, data, 0666)
+	if err != nil {
+		log.Printf("[uploadHanler] Write file error: %v", err)
+		sendErrorResponse(c, defs.ErrorInternalFaults)
+		return
+	}
+
+	fmt.Printf("[uploadHanler] Uploaded successfully: %s\n", fn)
+	c.String(http.StatusCreated, "Uploaded successfully")
 }
 
 func testPageHandler(c *gin.Context) {

@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 )
@@ -89,4 +91,16 @@ func apiHomeHandler(c *gin.Context) {
 	}
 
 	request(apibody, c)
+}
+
+func proxyVideoHandler(c *gin.Context) {
+	u, _ := url.Parse("http://" + getLbAddr() + ":9000/")
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+func proxyUploadHandler(c *gin.Context) {
+	u, _ := url.Parse("http://" + getLbAddr() + ":9000/")
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	proxy.ServeHTTP(c.Writer, c.Request)
 }
