@@ -182,3 +182,79 @@ func GetUserInfo(c *gin.Context) {
 		sendNormalResponse(c, string(resp), http.StatusOK)
 	}
 }
+
+func DeleteVideo(c *gin.Context) {
+	fmt.Println("[DeleteVideo] delete video")
+	if !ValidateUser(c.Request) {
+		fmt.Println("[DeleteVideo] Unauthorized user")
+		sendErrorResponse(c, defs.ErrorNotAuthUser)
+		return
+	}
+
+	vid := c.Param("vid-id")
+	fmt.Printf("[DeleteVideo] delete  vid-id %v\n", vid)
+	err := dbops.DeleteVideoInfo(vid)
+	if err != nil {
+		log.Printf("[DeleteVideo] Error in DeletVideo: %s", err)
+		sendErrorResponse(c, defs.ErrorDBError)
+		return
+	}
+
+	//给删除的任务程序
+
+	sendNormalResponse(c, "", http.StatusOK)
+}
+
+func PostComment(c *gin.Context) {
+	fmt.Println("[PostComment] ====")
+	if !ValidateUser(c.Request) {
+		fmt.Println("[PostComment] Unauthorized user")
+		sendErrorResponse(c, defs.ErrorNotAuthUser)
+		return
+	}
+
+	res, _ := io.ReadAll(c.Request.Body)
+	cbody := &defs.NewComment{}
+	if err := json.Unmarshal(res, cbody); err != nil {
+		log.Printf("[PostComment] %s", err)
+		sendErrorResponse(c, defs.ErrorRequestBodyParseFailed)
+		return
+	}
+
+	vid := c.Param("vid-id")
+	fmt.Printf("[PostComment] show comment  vid-id %v\n", vid)
+	if err := dbops.AddNewComments(vid, cbody.AuthorId, cbody.Content); err != nil {
+		log.Printf("[PostComment] Error in PostComment: %s", err)
+		sendErrorResponse(c, defs.ErrorDBError)
+	} else {
+		sendNormalResponse(c, "ok", http.StatusOK)
+	}
+}
+
+func ShowComments(c *gin.Context) {
+	fmt.Println("[ShowComments] ====")
+	if !ValidateUser(c.Request) {
+		fmt.Println("[ShowComments] Unauthorized user")
+		sendErrorResponse(c, defs.ErrorNotAuthUser)
+		return
+	}
+	vid := c.Param("vid-id")
+	fmt.Printf("[ShowComments] show comment  vid-id %v\n", vid)
+	cm, err := dbops.ListComments(vid, 0, utils.GetCurrentTimestampSec())
+	if err != nil {
+		log.Printf("Error in ShowComments: %s", err)
+		sendErrorResponse(c, defs.ErrorDBError)
+		return
+	}
+
+	cms := &defs.Comments{Comments: cm}
+	if cms.Comments == nil {
+		fmt.Println("[ShowComments]+++++++++++++++No comment found")
+		cms.Comments = []*defs.Comment{}
+	}
+	if resp, err := json.Marshal(cms); err != nil {
+		sendErrorResponse(c, defs.ErrorInternalFaults)
+	} else {
+		sendNormalResponse(c, string(resp), http.StatusOK)
+	}
+}

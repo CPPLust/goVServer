@@ -106,13 +106,13 @@ func AddNewVideo(aid int, name string) (*defs.VideoInfo, error) {
 	}
 	t := time.Now()
 	ctime := t.Format(time.DateTime)
-	stmIns, err := dbConn.Prepare(`INSERT INTO video_info (id,author_id,name,display_ctime) VALUES(?,?,?,?)`)
+	stmIns, err := dbConn.Prepare(`INSERT INTO video_info (id,author_id,name,display_ctime,create_time) VALUES(?,?,?,?,?)`)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	defer stmIns.Close()
-	_, err = stmIns.Exec(vid, aid, name, ctime)
+	_, err = stmIns.Exec(vid, aid, name, ctime, t)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -150,7 +150,7 @@ func ListVideoInfo(uname string, from, to int) ([]*defs.VideoInfo, error) {
 
 	stmtOut, err := dbConn.Prepare(`SELECT video_info.id, video_info.author_id, video_info.name, video_info.display_ctime FROM video_info 
 		INNER JOIN users ON video_info.author_id = users.id
-		WHERE users.login_name = ? AND video_info.create_time > FROM_UNIXTIME(?) AND video_info.create_time <= FROM_UNIXTIME(?) 
+		WHERE users.login_name = ? AND video_info.create_time >= FROM_UNIXTIME(?) AND video_info.create_time <= FROM_UNIXTIME(?) 
 		ORDER BY video_info.create_time DESC`)
 
 	var res []*defs.VideoInfo
@@ -209,13 +209,22 @@ func AddNewComments(vid string, aid int, content string) error {
 		return err
 	}
 
-	stmIns, err := dbConn.Prepare("INSERT INTO comments (id,video_id,author_id,content) VALUES(?,?,?,?)")
+	/*
+		CREATE TABLE IF NOT EXISTS comments (
+		  id VARCHAR(64) PRIMARY KEY NOT NULL,
+		  video_id VARCHAR(64),
+		  author_id INT,
+		  content TEXT,
+		  time DATETIME
+		);
+	*/
+	stmIns, err := dbConn.Prepare("INSERT INTO comments (id,video_id,author_id,content,time) VALUES(?,?,?,?,?)")
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 	defer stmIns.Close()
-	_, err = stmIns.Exec(id, vid, aid, content)
+	_, err = stmIns.Exec(id, vid, aid, content, time.Now())
 	if err != nil {
 		fmt.Println(err)
 		return err

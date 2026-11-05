@@ -38,6 +38,9 @@ type Comment struct {
 	Author  string `json:"author"`
 	Content string `json:"content"`
 }
+type Comments struct {
+	Comments []*Comment `json:"comments"`
+}
 
 type SimpleSession struct {
 	Username string
@@ -53,4 +56,9 @@ type User struct {
 
 type UserInfo struct {
 	Id int `json:"id"`
+}
+
+type NewComment struct {
+	AuthorId int    `json:"author_id"`
+	Content  string `json:"content"`
 }

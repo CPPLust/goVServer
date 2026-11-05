@@ -60,6 +60,7 @@ func streamHanler(c *gin.Context) {
 }
 
 func uploadHanler(c *gin.Context) {
+	log.Printf("[uploadHanler] coming a connection+++++")
 	// 限制请求体大小
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MAX_UPLOAD_SIZE)
 	if err := c.Request.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {

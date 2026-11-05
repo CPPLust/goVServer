@@ -35,7 +35,11 @@ func RegisterRoutes() *gin.Engine {
 	{
 		protected.POST("/user/:username/videos", AddNewVideo)
 		protected.GET("/user/:username/videos", ListAllVideos)
-		//protected.DELETE("/user/:username/videos/:vid-id", DeleteVideo)
+		protected.DELETE("/user/:username/videos/:vid-id", DeleteVideo)
+
+		protected.POST("/videos/:vid-id/comments", PostComment)
+
+		protected.GET("/videos/:vid-id/comments", ShowComments)
 	}
 
 	return router

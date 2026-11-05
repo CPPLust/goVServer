@@ -119,11 +119,18 @@ $(document).ready(function() {
   	
   	});
 
-	
+	// 文件选择后自动填充文件名
+	$("#inputFile").on('change', function() {
+		var file = this.files[0];
+		if (file) {
+			$("#vname").val(file.name);
+		}
+	});
+
 	$("#uploadform").on('submit', function(e) {
 		e.preventDefault()
 	  	var vname = $('#vname').val();
-
+		console.log("current file " + vname)
 	  	createVideo(vname, function(res, err) {
 	  		if (err != null ) {
 	  			//window.alert('encounter an error when try to create video');
