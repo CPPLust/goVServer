@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"goVServer/api/defs"
+	"goVServer/api/session"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,6 +47,15 @@ func RegisterRoutes() *gin.Engine {
 }
 
 func main() {
+	// 初始化 Redis 会话缓存
+	if err := session.InitRedis("127.0.0.1:6379", "", 0); err != nil {
+		fmt.Printf("[Main] Redis 初始化失败: %v\n", err)
+	} else {
+		// 从 MySQL 预热到 Redis
+		session.LoadSessionsFromDB()
+		defer session.Close()
+	}
+
 	server := RegisterRoutes()
 	server.Run(":8000")
 }
